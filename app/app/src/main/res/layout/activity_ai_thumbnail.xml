@@ -1,99 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#F5F5F5">
+    android:fillViewport="true"
+    android:background="#1A1A2E">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="✨ AI 썸네일 자동 생성"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="썸네일 재료 사진 첨부 (최대 5장)"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
-
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginBottom="16dp">
-
+        <!-- ── 상단 고정 헤더 ── -->
         <LinearLayout
-            android:id="@+id/llImageContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <FrameLayout
-                android:id="@+id/btnAddImages"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:background="#E0E0E0"
-                android:layout_marginEnd="8dp">
-                
-                <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@android:drawable/ic_menu_add"
-                    android:layout_gravity="center"
-                    app:tint="#757575"
-                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
-            </FrameLayout>
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="뒤로가기"
+                android:tint="#FFFFFF" />
 
-            <!-- Preview Images will be added here dynamically -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="AI 썸네일 생성"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginStart="8dp" />
+
+            <!-- API Key 설정 버튼 -->
+            <Button
+                android:id="@+id/btnSetKey"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="API Key"
+                android:textSize="12sp"
+                android:backgroundTint="#E94560"
+                android:textColor="#FFFFFF"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp" />
+
         </LinearLayout>
-    </HorizontalScrollView>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="어떤 느낌으로 만들까요? (프롬프트)"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        <!-- ── API Key 미설정 안내 ── -->
+        <TextView
+            android:id="@+id/tvNoKey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="#33E94560"
+            android:padding="12dp"
+            android:text="⚠️ Gemini API Key가 설정되지 않았습니다.\n오른쪽 상단 'API Key' 버튼을 눌러 Google AI Studio에서\n무료 키를 발급받아 입력해 주세요."
+            android:textColor="#FFD700"
+            android:textSize="13sp"
+            android:visibility="gone" />
 
-    <EditText
-        android:id="@+id/etPrompt"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@android:drawable/edit_text"
-        android:gravity="top|start"
-        android:hint="예) 뉴스 브레이킹 속보 뉴스 스타일로 진지하고 심각하게 합성해줘. 하단에 빨간 텍스트로 '긴급 속보'라고 적어줘."
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        <!-- ── 레퍼런스 이미지 선택 ── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="레퍼런스 이미지 (선택사항, 최대 5장)"
+            android:textColor="#AAAAAA"
+            android:textSize="13sp" />
 
-    <Button
-        android:id="@+id/btnGenerate"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="AI 썸네일 생성하기 (1/3회 남음)"
-        android:textStyle="bold"
-        android:backgroundTint="#FF6200EE"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="24dp"/>
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="생성된 썸네일 (터치하여 선택)"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+            <LinearLayout
+                android:id="@+id/llImageContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                android:orientation="horizontal">
 
-    <!-- Placeholder for multiple generated images -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvGeneratedImages"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:orientation="horizontal" />
+                <!-- 이미지 추가 버튼 -->
+                <LinearLayout
+                    android:id="@+id/btnAddImages"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="@drawable/circle_bg"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true">
 
-</LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="+"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="이미지 추가"
+                        android:textColor="#AAAAAA"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <!-- ── 프롬프트 입력 ── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="원하는 썸네일 스타일 설명"
+            android:textColor="#AAAAAA"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/etPrompt"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="8dp"
+            android:background="#2A2A3E"
+            android:gravity="top"
+            android:hint="예: 태극기와 광화문, 역동적인 분위기, 붉은 계열 색상"
+            android:textColorHint="#666688"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:padding="12dp"
+            android:inputType="textMultiLine"
+            android:minLines="3" />
+
+        <!-- ── 생성 / 확정 버튼 ── -->
+        <Button
+            android:id="@+id/btnGenerate"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#E94560"
+            android:text="AI 썸네일 생성하기"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <!-- ── 로딩 영역 ── -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:indeterminateTint="#E94560"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="AI가 썸네일을 그리고 있습니다..."
+            android:textColor="#AAAAAA"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <!-- ── 생성 결과 영역 ── -->
+        <LinearLayout
+            android:id="@+id/layoutResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="생성된 썸네일 — 마음에 드는 것을 선택해 주세요"
+                android:textColor="#AAAAAA"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvGeneratedImages"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:clipToPadding="false"
+                android:paddingStart="0dp"
+                android:paddingEnd="16dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
