@@ -129,7 +129,7 @@ class AiThumbnailActivity : AppCompatActivity() {
 
         val editText = EditText(this).apply {
             setText(if (ApiKeyManager.hasApiKey(this@AiThumbnailActivity)) currentKey else "")
-            hint = "Google AI Studio API Key"
+            setHint("Google AI Studio API Key")
             setSingleLine(true)
         }
 

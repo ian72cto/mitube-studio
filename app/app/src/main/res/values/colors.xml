@@ -2,5 +2,26 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <!-- Add more colors as needed to prevent missing resource errors -->
+
+    <!-- Material Design color palette -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
+    <!-- App theme colors -->
+    <color name="colorPrimary">#FF6200EE</color>
+    <color name="colorPrimaryDark">#FF3700B3</color>
+    <color name="colorAccent">#FF03DAC5</color>
+
+    <!-- AI Thumbnail screen colors -->
+    <color name="background_dark">#FF121212</color>
+    <color name="surface_dark">#FF1E1E1E</color>
+    <color name="surface_card">#FF2A2A2A</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="accent_blue">#FF4285F4</color>
+    <color name="accent_blue_dark">#FF2962FF</color>
+    <color name="divider_color">#FF333333</color>
 </resources>
