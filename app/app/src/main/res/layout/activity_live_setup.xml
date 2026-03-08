@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#1E1E1E">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="스트림 만들기 (세부정보)"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="제목(필수 항목)"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp"/>
+        <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="스트림을 설명하는 제목 추가"
+            android:textColorHint="#666666"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#333333"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Description -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="설명"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp"/>
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:gravity="top|start"
+            android:hint="시청자에게 스트림에 대해 자세히 설명"
+            android:textColorHint="#666666"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#333333"
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Privacy -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="공개 상태"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp"/>
+        <Spinner
+            android:id="@+id/spinnerPrivacy"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:backgroundTint="#AAAAAA"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Made for Kids -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="시청자층"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"/>
+        <RadioGroup
+            android:id="@+id/rgKids"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <RadioButton
+                android:id="@+id/rbKidsYes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="예, 아동용입니다"
+                android:textColor="#FFFFFF"
+                android:buttonTint="#3EA6FF"/>
+            <RadioButton
+                android:id="@+id/rbKidsNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="아니요, 아동용이 아닙니다"
+                android:textColor="#FFFFFF"
+                android:checked="true"
+                android:buttonTint="#3EA6FF"/>
+        </RadioGroup>
+
+        <!-- Schedule -->
+        <CheckBox
+            android:id="@+id/cbSchedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="일정 예약 (나중에 스트리밍)"
+            android:textColor="#FFFFFF"
+            android:buttonTint="#3EA6FF"
+            android:layout_marginBottom="8dp"/>
+        
+        <LinearLayout
+            android:id="@+id/layoutDateTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:layout_marginBottom="24dp">
+            <Button
+                android:id="@+id/btnDatePick"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="날짜 선택"
+                android:backgroundTint="#333333"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="8dp"/>
+            <Button
+                android:id="@+id/btnTimePick"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="시간 선택"
+                android:backgroundTint="#333333"
+                android:textColor="#FFFFFF"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#333333"
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="맞춤설정 및 지연 시간"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Latency -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="스트림 지연 시간"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp"/>
+        <Spinner
+            android:id="@+id/spinnerLatency"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:backgroundTint="#AAAAAA"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Chat Settings -->
+        <CheckBox
+            android:id="@+id/cbChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="실시간 채팅 사용"
+            android:textColor="#FFFFFF"
+            android:checked="true"
+            android:buttonTint="#3EA6FF"/>
+        <CheckBox
+            android:id="@+id/cbChatReplay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="실시간 채팅 다시보기"
+            android:textColor="#FFFFFF"
+            android:checked="true"
+            android:buttonTint="#3EA6FF"
+            android:layout_marginBottom="32dp"/>
+
+        <Button
+            android:id="@+id/btnCreateLive"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="방송 생성 및 RTMP 발급받기"
+            android:textSize="16sp"
+            android:backgroundTint="#3EA6FF"
+            android:textColor="#000000"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</ScrollView>

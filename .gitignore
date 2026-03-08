@@ -1,0 +1,21 @@
+# Local properties (API keys - 절대 커밋 금지!)
+local.properties
+*.keystore
+
+# Build outputs
+.gradle/
+build/
+app/build/
+
+# Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Google services (if any secret configs)
+google-services.json
+
+# Logs
+*.log

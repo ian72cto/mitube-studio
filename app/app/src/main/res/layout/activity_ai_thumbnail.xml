@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F5F5F5">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="✨ AI 썸네일 자동 생성"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="썸네일 재료 사진 첨부 (최대 5장)"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:id="@+id/llImageContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:id="@+id/btnAddImages"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:background="#E0E0E0"
+                android:layout_marginEnd="8dp">
+                
+                <ImageView
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@android:drawable/ic_menu_add"
+                    android:layout_gravity="center"
+                    app:tint="#757575"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
+            </FrameLayout>
+
+            <!-- Preview Images will be added here dynamically -->
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="어떤 느낌으로 만들까요? (프롬프트)"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etPrompt"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@android:drawable/edit_text"
+        android:gravity="top|start"
+        android:hint="예) 뉴스 브레이킹 속보 뉴스 스타일로 진지하고 심각하게 합성해줘. 하단에 빨간 텍스트로 '긴급 속보'라고 적어줘."
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnGenerate"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="AI 썸네일 생성하기 (1/3회 남음)"
+        android:textStyle="bold"
+        android:backgroundTint="#FF6200EE"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="생성된 썸네일 (터치하여 선택)"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Placeholder for multiple generated images -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvGeneratedImages"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:orientation="horizontal" />
+
+</LinearLayout>
