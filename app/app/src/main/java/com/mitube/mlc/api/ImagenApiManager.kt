@@ -15,14 +15,13 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 
 /**
- * Google Imagen 3 API 매니저
+ * Google AI 이미지 생성 매니저
  *
- * 같은 Google AI Studio API Key(gemini와 동일)를 사용하여
+ * AI Studio API Key(gemini와 동일)를 사용하여
  * 텍스트 프롬프트 → 고품질 이미지 생성.
  *
- * 모델: imagen-3.0-generate-001
- * API 문서: https://ai.google.dev/api/generate-images
- * 무료 Tier: 분당 10 QPM (2025년 기준)
+ * 1차 시도: Imagen 3 (imagen-3.0-generate-001)
+ * 폴백: Gemini 2.0 Flash 이미지 생성
  */
 class ImagenApiManager(private val apiKey: String) {
 
@@ -32,15 +31,15 @@ class ImagenApiManager(private val apiKey: String) {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    private val BASE_URL =
-        "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict"
+    private val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
     /**
      * 썸네일 이미지 생성
+     * Imagen 3 → 실패 시 Gemini Flash 이미지 생성 폴백
      *
      * @param prompt 이미지 설명 텍스트
      * @param sampleCount 생성할 이미지 수 (1~4, 기본값 4)
-     * @return 생성된 Bitmap 리스트 (실패 시 빈 리스트)
+     * @return 생성된 Bitmap 리스트
      */
     suspend fun generateImages(
         prompt: String,
@@ -52,26 +51,41 @@ class ImagenApiManager(private val apiKey: String) {
             )
         }
 
+        val enhancedPrompt = buildYoutubeThumbnailPrompt(prompt)
+
+        // 1차 시도: Imagen 3
+        val imagenResult = tryImagen3(enhancedPrompt, sampleCount)
+        if (imagenResult.isSuccess && imagenResult.getOrNull()?.isNotEmpty() == true) {
+            return@withContext imagenResult
+        }
+
+        // 폴백: Gemini Flash 이미지 생성
+        return@withContext tryGeminiImageGeneration(enhancedPrompt, sampleCount)
+    }
+
+    /**
+     * Imagen 3 시도 (단순화된 파라미터)
+     */
+    private suspend fun tryImagen3(
+        prompt: String,
+        sampleCount: Int
+    ): Result<List<Bitmap>> = withContext(Dispatchers.IO) {
         try {
-            // YouTube 썸네일에 최적화된 프롬프트로 강화
-            val enhancedPrompt = buildYoutubeThumbnailPrompt(prompt)
+            val url = "$BASE_URL/imagen-3.0-generate-001:predict?key=$apiKey"
 
             val requestBody = JSONObject().apply {
                 put("instances", JSONArray().apply {
                     put(JSONObject().apply {
-                        put("prompt", enhancedPrompt)
+                        put("prompt", prompt)
                     })
                 })
                 put("parameters", JSONObject().apply {
                     put("sampleCount", sampleCount.coerceIn(1, 4))
-                    put("aspectRatio", "16:9")           // YouTube 썸네일 비율
-                    put("safetyFilterLevel", "block_few") // 적절한 안전 수준
-                    put("personGeneration", "allow_adult") // 성인 인물 허용
                 })
             }.toString()
 
             val request = Request.Builder()
-                .url("$BASE_URL?key=$apiKey")
+                .url(url)
                 .post(requestBody.toRequestBody("application/json".toMediaType()))
                 .build()
 
@@ -79,13 +93,69 @@ class ImagenApiManager(private val apiKey: String) {
             val responseBody = response.body?.string() ?: ""
 
             if (!response.isSuccessful) {
-                val errorMessage = parseApiError(responseBody, response.code)
-                return@withContext Result.failure(Exception(errorMessage))
+                return@withContext Result.failure(Exception("Imagen 404: $responseBody"))
             }
 
-            val bitmaps = parseImageResponse(responseBody)
+            val bitmaps = parseImagenResponse(responseBody)
             Result.success(bitmaps)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
+    /**
+     * Gemini 2.0 Flash 이미지 생성 (폴백)
+     * generateContent 엔드포인트 사용 — AI Studio 키로 확실히 동작
+     */
+    private suspend fun tryGeminiImageGeneration(
+        prompt: String,
+        sampleCount: Int
+    ): Result<List<Bitmap>> = withContext(Dispatchers.IO) {
+        try {
+            val bitmaps = mutableListOf<Bitmap>()
+            val count = sampleCount.coerceIn(1, 4)
+
+            // Gemini는 1번에 1장 생성 → count 만큼 반복
+            repeat(count) {
+                val url = "$BASE_URL/gemini-2.0-flash-preview-image-generation:generateContent?key=$apiKey"
+
+                val requestBody = JSONObject().apply {
+                    put("contents", JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("parts", JSONArray().apply {
+                                put(JSONObject().apply {
+                                    put("text", prompt)
+                                })
+                            })
+                        })
+                    })
+                    put("generationConfig", JSONObject().apply {
+                        put("responseModalities", JSONArray().apply {
+                            put("IMAGE")
+                            put("TEXT")
+                        })
+                    })
+                }.toString()
+
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestBody.toRequestBody("application/json".toMediaType()))
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string() ?: ""
+
+                if (response.isSuccessful) {
+                    val bitmap = parseGeminiImageResponse(responseBody)
+                    if (bitmap != null) bitmaps.add(bitmap)
+                }
+            }
+
+            if (bitmaps.isEmpty()) {
+                Result.failure(Exception("이미지 생성에 실패했습니다.\nAPI Key가 올바른지 확인하거나 잠시 후 다시 시도해 주세요."))
+            } else {
+                Result.success(bitmaps)
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -95,28 +165,24 @@ class ImagenApiManager(private val apiKey: String) {
      * YouTube 썸네일에 최적화된 프롬프트 생성
      */
     private fun buildYoutubeThumbnailPrompt(userPrompt: String): String {
-        return """YouTube thumbnail image, high quality, eye-catching, vibrant colors, 
-            |professional design, 16:9 aspect ratio, 
-            |$userPrompt, 
-            |bold typography space, dramatic lighting, high contrast, 
-            |photorealistic, 4K quality""".trimMargin()
+        return "YouTube thumbnail image, high quality, eye-catching, vibrant colors, " +
+                "professional design, 16:9 aspect ratio, $userPrompt, " +
+                "bold typography space, dramatic lighting, high contrast, photorealistic"
     }
 
     /**
-     * API 응답에서 Bitmap 리스트 추출
+     * Imagen API 응답 파싱
      */
-    private fun parseImageResponse(responseJson: String): List<Bitmap> {
+    private fun parseImagenResponse(responseJson: String): List<Bitmap> {
         val bitmaps = mutableListOf<Bitmap>()
         try {
             val json = JSONObject(responseJson)
             val predictions = json.optJSONArray("predictions") ?: return emptyList()
-
             for (i in 0 until predictions.length()) {
                 val prediction = predictions.getJSONObject(i)
                 val base64Data = prediction.optString("bytesBase64Encoded", "")
                 if (base64Data.isNotEmpty()) {
-                    val bitmap = decodeBase64ToBitmap(base64Data)
-                    if (bitmap != null) bitmaps.add(bitmap)
+                    decodeBase64ToBitmap(base64Data)?.let { bitmaps.add(it) }
                 }
             }
         } catch (e: Exception) {
@@ -126,22 +192,27 @@ class ImagenApiManager(private val apiKey: String) {
     }
 
     /**
-     * API 에러 응답 파싱 → 사람이 읽기 쉬운 메시지로 변환
+     * Gemini generateContent 응답에서 이미지 추출
      */
-    private fun parseApiError(responseJson: String, statusCode: Int): String {
+    private fun parseGeminiImageResponse(responseJson: String): Bitmap? {
         return try {
             val json = JSONObject(responseJson)
-            val error = json.optJSONObject("error")
-            val message = error?.optString("message", "") ?: ""
-            when (statusCode) {
-                400 -> "요청 오류: $message"
-                401, 403 -> "API Key 인증 실패. Google AI Studio에서 유효한 키인지 확인해 주세요."
-                429 -> "요청 한도 초과 (Rate Limit). 잠시 후 다시 시도해 주세요."
-                500, 503 -> "Google 서버 오류. 잠시 후 다시 시도해 주세요."
-                else -> "오류 ($statusCode): $message"
+            val candidates = json.optJSONArray("candidates") ?: return null
+            val content = candidates.getJSONObject(0).optJSONObject("content") ?: return null
+            val parts = content.optJSONArray("parts") ?: return null
+
+            for (i in 0 until parts.length()) {
+                val part = parts.getJSONObject(i)
+                val inlineData = part.optJSONObject("inlineData") ?: continue
+                val base64Data = inlineData.optString("data", "")
+                if (base64Data.isNotEmpty()) {
+                    return decodeBase64ToBitmap(base64Data)
+                }
             }
+            null
         } catch (e: Exception) {
-            "알 수 없는 오류 (HTTP $statusCode)"
+            e.printStackTrace()
+            null
         }
     }
 
@@ -150,7 +221,6 @@ class ImagenApiManager(private val apiKey: String) {
             val bytes = Base64.decode(base64Str, Base64.DEFAULT)
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
     }
