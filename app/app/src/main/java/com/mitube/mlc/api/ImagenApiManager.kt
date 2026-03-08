@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
  * 같은 Google AI Studio API Key(gemini와 동일)를 사용하여
  * 텍스트 프롬프트 → 고품질 이미지 생성.
  *
- * 모델: imagen-3.0-generate-002
+ * 모델: imagen-3.0-generate-001
  * API 문서: https://ai.google.dev/api/generate-images
  * 무료 Tier: 분당 10 QPM (2025년 기준)
  */
@@ -33,7 +33,7 @@ class ImagenApiManager(private val apiKey: String) {
         .build()
 
     private val BASE_URL =
-        "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict"
+        "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict"
 
     /**
      * 썸네일 이미지 생성
