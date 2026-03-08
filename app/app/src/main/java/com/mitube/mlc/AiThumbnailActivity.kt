@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -37,13 +36,13 @@ class AiThumbnailActivity : AppCompatActivity() {
     private lateinit var rvGeneratedImages: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var tvStatus: TextView
-    private lateinit var tvNoKey: TextView
-    private lateinit var btnSetKey: Button
     private lateinit var layoutResult: View
 
     private val selectedImageUris = mutableListOf<Uri>()
     private var generatedBitmaps = listOf<Bitmap>()
     private var selectedGeneratedImageIndex = -1
+
+    private val imagenManager = ImagenApiManager()
 
     private val pickMultipleMedia =
         registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris ->
@@ -64,8 +63,6 @@ class AiThumbnailActivity : AppCompatActivity() {
         rvGeneratedImages = findViewById(R.id.rvGeneratedImages)
         progressBar = findViewById(R.id.progressBar)
         tvStatus = findViewById(R.id.tvStatus)
-        tvNoKey = findViewById(R.id.tvNoKey)
-        btnSetKey = findViewById(R.id.btnSetKey)
         layoutResult = findViewById(R.id.layoutResult)
 
         rvGeneratedImages.layoutManager =
@@ -74,15 +71,12 @@ class AiThumbnailActivity : AppCompatActivity() {
         // 뒤로가기 버튼
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
-        // 이미지 추가 버튼
+        // 레퍼런스 이미지 추가 버튼
         findViewById<View>(R.id.btnAddImages).setOnClickListener {
             pickMultipleMedia.launch(
                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
             )
         }
-
-        // API Key 설정 버튼
-        btnSetKey.setOnClickListener { showApiKeyDialog() }
 
         // 생성 / 확정 버튼
         btnGenerate.setOnClickListener {
@@ -96,100 +90,23 @@ class AiThumbnailActivity : AppCompatActivity() {
                 // 썸네일 선택 확정 → 이전 화면으로 반환
                 saveAndReturnImage(generatedBitmaps[selectedGeneratedImageIndex])
             } else {
-                // 아직 선택 안 됨 → API 호출로 이미지 생성
-                checkKeyAndGenerate(prompt)
+                // API 호출로 이미지 생성
+                generateImages(prompt)
             }
         }
-
-        // 초기 UI 상태 업데이트
-        checkApiKeyStatus()
     }
 
     // ───────────────────────────────────────────────
-    // API Key 상태 확인 / 설정
+    // 이미지 생성 (Pollinations.ai - API 키 불필요)
     // ───────────────────────────────────────────────
 
-    private fun checkApiKeyStatus() {
-        if (ApiKeyManager.hasApiKey(this)) {
-            tvNoKey.visibility = View.GONE
-            btnSetKey.text = "API Key 변경"
-            btnSetKey.visibility = View.VISIBLE
-            btnGenerate.isEnabled = true
-        } else {
-            tvNoKey.visibility = View.VISIBLE
-            btnSetKey.text = "API Key 입력하기"
-            btnSetKey.visibility = View.VISIBLE
-            btnGenerate.isEnabled = false
-        }
-    }
-
-    private fun showApiKeyDialog() {
-        val currentKey = ApiKeyManager.getApiKey(this)
-        val hint = if (ApiKeyManager.hasApiKey(this)) "현재 키: ${currentKey.take(8)}..." else "AIzaSy..."
-
-        val editText = EditText(this).apply {
-            setText(if (ApiKeyManager.hasApiKey(this@AiThumbnailActivity)) currentKey else "")
-            setHint("Google AI Studio API Key")
-            setSingleLine(true)
-        }
-
-        val padding = (16 * resources.displayMetrics.density).toInt()
-        val container = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(padding, padding, padding, 0)
-            addView(editText)
-
-            val guide = TextView(this@AiThumbnailActivity).apply {
-                text = "📌 무료 발급: aistudio.google.com → Get API Key"
-                textSize = 12f
-                setPadding(0, 8, 0, 0)
-            }
-            addView(guide)
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Gemini / Imagen API Key 설정")
-            .setMessage("Google AI Studio에서 무료로 발급받은 API Key를 입력해 주세요.")
-            .setView(container)
-            .setPositiveButton("저장") { _, _ ->
-                val key = editText.text.toString().trim()
-                if (key.startsWith("AIza") && key.length > 20) {
-                    ApiKeyManager.saveApiKey(this, key)
-                    checkApiKeyStatus()
-                    Toast.makeText(this, "API Key 저장 완료!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "올바른 형식의 API Key가 아닙니다.\n'AIza'로 시작하는 키를 입력해 주세요.", Toast.LENGTH_LONG).show()
-                }
-            }
-            .setNegativeButton("취소", null)
-            .setNeutralButton("AI Studio 열기") { _, _ ->
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey")))
-            }
-            .show()
-    }
-
-    // ───────────────────────────────────────────────
-    // 이미지 생성 (Imagen 3 API)
-    // ───────────────────────────────────────────────
-
-    private fun checkKeyAndGenerate(prompt: String) {
-        if (!ApiKeyManager.hasApiKey(this)) {
-            showApiKeyDialog()
-            return
-        }
-        generateWithImagenApi(prompt)
-    }
-
-    private fun generateWithImagenApi(prompt: String) {
+    private fun generateImages(prompt: String) {
         btnGenerate.isEnabled = false
         btnGenerate.text = "생성 중..."
         progressBar.visibility = View.VISIBLE
         tvStatus.visibility = View.VISIBLE
-        tvStatus.text = "AI가 썸네일을 그리고 있습니다..."
+        tvStatus.text = "AI가 썸네일을 그리고 있습니다... (최대 2분 소요)"
         layoutResult.visibility = View.GONE
-
-        val apiKey = ApiKeyManager.getApiKey(this)
-        val imagenManager = ImagenApiManager(apiKey)
 
         CoroutineScope(Dispatchers.Main).launch {
             val result = imagenManager.generateImages(
@@ -233,7 +150,7 @@ class AiThumbnailActivity : AppCompatActivity() {
     private fun showGeneratedImages(bitmaps: List<Bitmap>) {
         layoutResult.visibility = View.VISIBLE
         selectedGeneratedImageIndex = -1
-        btnGenerate.text = "AI가 생성한 썸네일 중 선택 후 ↓ 버튼을 눌러 주세요"
+        btnGenerate.text = "썸네일을 선택한 후 버튼을 눌러 주세요"
 
         val adapter = GeneratedThumbnailAdapter(bitmaps) { index ->
             selectedGeneratedImageIndex = index
@@ -249,7 +166,6 @@ class AiThumbnailActivity : AppCompatActivity() {
             .setTitle("생성 실패")
             .setMessage(message)
             .setPositiveButton("확인", null)
-            .setNegativeButton("API Key 확인") { _, _ -> showApiKeyDialog() }
             .show()
 
         btnGenerate.text = "다시 생성하기"

@@ -37,33 +37,21 @@
                 android:textStyle="bold"
                 android:layout_marginStart="8dp" />
 
-            <!-- API Key 설정 버튼 -->
-            <Button
-                android:id="@+id/btnSetKey"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:text="API Key"
-                android:textSize="12sp"
-                android:backgroundTint="#E94560"
-                android:textColor="#FFFFFF"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp" />
+
 
         </LinearLayout>
 
-        <!-- ── API Key 미설정 안내 ── -->
+        <!-- Pollinations.ai 무료 서비스 안내 -->
         <TextView
-            android:id="@+id/tvNoKey"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:background="#33E94560"
-            android:padding="12dp"
-            android:text="⚠️ Gemini API Key가 설정되지 않았습니다.\n오른쪽 상단 'API Key' 버튼을 눌러 Google AI Studio에서\n무료 키를 발급받아 입력해 주세요."
-            android:textColor="#FFD700"
-            android:textSize="13sp"
-            android:visibility="gone" />
+            android:background="#33FFFFFF"
+            android:padding="10dp"
+            android:text="✨ Pollinations.ai 무료 AI 이미지 생성 (API 키 불필요)"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp" />
 
         <!-- ── 레퍼런스 이미지 선택 ── -->
         <TextView
